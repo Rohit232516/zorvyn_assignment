@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { Plus, Lock } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { useDataLoader } from '../hooks/useDataLoader'
 import TransactionFilters from '../components/Transactions/TransactionFilters'
 import TransactionTable from '../components/Transactions/TransactionTable'
 import TransactionModal from '../components/Transactions/TransactionModal'
+import { TransactionsSkeleton } from '../components/UI/Skeleton'
+import ErrorState from '../components/UI/ErrorState'
 
 export default function TransactionsPage() {
   const { state } = useApp()
   const { role } = state
   const isAdmin = role === 'admin'
+  const { isLoading, isError, retry } = useDataLoader(700)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
@@ -51,11 +55,22 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Filters — always visible so users can change them */}
       <TransactionFilters />
 
-      {/* Table */}
-      <TransactionTable onEdit={openEdit} />
+      {/* Table — guarded by load state */}
+      {isLoading ? (
+        <TransactionsSkeleton />
+      ) : isError ? (
+        <div className="card">
+          <ErrorState
+            message="Couldn't fetch your transactions. Check your connection and try again."
+            onRetry={retry}
+          />
+        </div>
+      ) : (
+        <TransactionTable onEdit={openEdit} />
+      )}
 
       {/* Modal */}
       {modalOpen && (

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Wallet, ArrowUpCircle, ArrowDownCircle, PiggyBank } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import {
   getTotals,
@@ -7,9 +7,12 @@ import {
   getPercentChange,
 } from '../utils/calculations'
 import { formatCurrency } from '../utils/formatters'
+import { useDataLoader } from '../hooks/useDataLoader'
 import SummaryCard from '../components/Dashboard/SummaryCard'
 import BalanceTrendChart from '../components/Dashboard/BalanceTrendChart'
 import ExpenseBreakdownChart from '../components/Dashboard/ExpenseBreakdownChart'
+import { CardSkeleton, ChartSkeleton } from '../components/UI/Skeleton'
+import ErrorState from '../components/UI/ErrorState'
 
 const THIS_MONTH = '2026-03'
 const LAST_MONTH = '2026-02'
@@ -17,29 +20,60 @@ const LAST_MONTH = '2026-02'
 export default function DashboardPage() {
   const { state } = useApp()
   const { transactions } = state
+  const { isLoading, isError, retry } = useDataLoader(800)
 
   const summary = useMemo(() => {
     const all   = getTotals(transactions)
     const curr  = getTotals(getMonthTransactions(transactions, THIS_MONTH))
     const prev  = getTotals(getMonthTransactions(transactions, LAST_MONTH))
 
+    const savings     = all.income - all.expenses
+    const currSavings = curr.income - curr.expenses
+    const prevSavings = prev.income - prev.expenses
+
     return {
-      balance:       all.income - all.expenses,
+      balance:       savings,
       totalIncome:   all.income,
       totalExpenses: all.expenses,
+      savings,
       incomeChange:  getPercentChange(curr.income,   prev.income),
       expenseChange: getPercentChange(curr.expenses, prev.expenses),
-      balanceChange: getPercentChange(
-        curr.income - curr.expenses,
-        prev.income - prev.expenses
-      ),
+      balanceChange: getPercentChange(currSavings, prevSavings),
+      savingsChange: getPercentChange(currSavings, prevSavings),
     }
   }, [transactions])
+
+  if (isLoading) {
+    return (
+      <div className="p-4 sm:p-6 space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-3"><ChartSkeleton height={220} /></div>
+          <div className="lg:col-span-2"><ChartSkeleton height={220} /></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-4 sm:p-6">
+        <div className="card">
+          <ErrorState
+            message="We couldn't load your dashboard data. This is usually a temporary issue."
+            onRetry={retry}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-6 animate-fade-in">
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard
           label="Net Balance"
           amount={summary.balance}
@@ -60,6 +94,17 @@ export default function DashboardPage() {
           change={summary.expenseChange}
           icon={ArrowDownCircle}
           colorClass="bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+        />
+        <SummaryCard
+          label="Savings"
+          amount={summary.savings}
+          change={summary.savingsChange}
+          icon={PiggyBank}
+          colorClass={
+            summary.savings >= 0
+              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+              : 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
+          }
         />
       </div>
 

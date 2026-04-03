@@ -10,6 +10,8 @@ const initialState = {
   role: 'admin',            // 'admin' | 'viewer'
   filter: 'all',            // 'all' | 'income' | 'expense'
   searchQuery: '',
+  categoryFilter: 'all',
+  dateRange: { start: '', end: '' },
   sortConfig: { key: 'date', direction: 'desc' },
   darkMode: false,
 }
@@ -51,6 +53,12 @@ function reducer(state, action) {
     case 'SET_SORT':
       return { ...state, sortConfig: action.payload }
 
+    case 'SET_CATEGORY_FILTER':
+      return { ...state, categoryFilter: action.payload }
+
+    case 'SET_DATE_RANGE':
+      return { ...state, dateRange: { ...state.dateRange, ...action.payload } }
+
     case 'TOGGLE_DARK_MODE':
       return { ...state, darkMode: !state.darkMode }
 
@@ -78,7 +86,7 @@ export function AppProvider({ children }) {
 
   // Persist state to localStorage (skip heavy transaction array writes on every keystroke)
   useEffect(() => {
-    const { searchQuery, ...persistable } = state
+    const { searchQuery, categoryFilter, dateRange, ...persistable } = state
     localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable))
   }, [state])
 

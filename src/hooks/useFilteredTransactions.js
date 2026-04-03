@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 
 export function useFilteredTransactions() {
   const { state } = useApp()
-  const { transactions, filter, searchQuery, sortConfig } = state
+  const { transactions, filter, searchQuery, categoryFilter, dateRange, sortConfig } = state
 
   return useMemo(() => {
     let result = [...transactions]
@@ -11,6 +11,19 @@ export function useFilteredTransactions() {
     // Type filter
     if (filter !== 'all') {
       result = result.filter((tx) => tx.type === filter)
+    }
+
+    // Category filter
+    if (categoryFilter !== 'all') {
+      result = result.filter((tx) => tx.category === categoryFilter)
+    }
+
+    // Date range — compare as strings (ISO format sorts correctly)
+    if (dateRange.start) {
+      result = result.filter((tx) => tx.date >= dateRange.start)
+    }
+    if (dateRange.end) {
+      result = result.filter((tx) => tx.date <= dateRange.end)
     }
 
     // Search: match description, category, or amount
@@ -41,5 +54,5 @@ export function useFilteredTransactions() {
     })
 
     return result
-  }, [transactions, filter, searchQuery, sortConfig])
+  }, [transactions, filter, searchQuery, categoryFilter, dateRange, sortConfig])
 }
