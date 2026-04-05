@@ -74,17 +74,18 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ---
 
 ## Project Structure
+```
 src/
 ├── components/
-│   ├── Dashboard/        # SummaryCard, BalanceTrendChart, ExpenseBreakdownChart
-│   ├── Insights/         # InsightCard
-│   ├── Layout/           # Sidebar, Header
-│   ├── Transactions/     # TransactionTable, TransactionFilters, TransactionModal
-│   └── UI/               # Badge, EmptyState
+│   ├── Dashboard/          # SummaryCard, BalanceTrendChart, ExpenseBreakdownChart
+│   ├── Insights/           # InsightCard
+│   ├── Layout/             # Sidebar, Header
+│   ├── Transactions/       # TransactionTable, TransactionFilters, TransactionModal
+│   └── UI/                 # Badge, EmptyState
 ├── context/
-│   └── AppContext.jsx    # Global state: transactions, role, filters, dark mode
+│   └── AppContext.jsx      # Global state: transactions, role, filters, dark mode
 ├── data/
-│   └── transactions.js   # 56 realistic mock transactions across Jan–Mar 2026
+│   └── transactions.js     # 56 realistic mock transactions across Jan–Mar 2026
 ├── hooks/
 │   ├── useFilteredTransactions.js
 │   └── useInsights.js
@@ -93,10 +94,10 @@ src/
 │   ├── InsightsPage.jsx
 │   └── TransactionsPage.jsx
 ├── utils/
-│   ├── calculations.js   # Pure financial calculation helpers
-│   └── formatters.js     # Currency, date, percent formatters
+│   ├── calculations.js     # Pure financial calculation helpers
+│   └── formatters.js       # Currency, date, percent formatters
 └── App.jsx
----
+```
 
 ## Design Decisions
 
